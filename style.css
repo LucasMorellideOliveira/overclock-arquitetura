@@ -130,7 +130,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .drop.wrong{background:#3b0f19;border-color:var(--red)}
 .drop.boom{animation:boom .35s forwards}
 @keyframes boom{to{transform:translate(-50%,-20px) scale(1.5);opacity:0}}
-.rainclue{margin-top:12px;padding:12px 14px;border-radius:12px;background:#0a1118;border:1px solid var(--cyan);font-weight:700;font-size:17px;line-height:1.35}
+.rainclue{margin-bottom:12px;padding:12px 14px;border-radius:12px;background:#0a1118;border:1px solid var(--cyan);font-weight:700;font-size:17px;line-height:1.35}
 
 /* digita */
 .typerow{display:flex;gap:10px}
@@ -202,3 +202,5 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+.rain .ready{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);font-family:var(--pix);font-size:11px;color:var(--cyan);opacity:.8;animation:pulse .5s infinite alternate}

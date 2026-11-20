@@ -167,7 +167,7 @@ function titleScreen() {
 function howto() {
   return `<div class="howto">
     <h3>⚡ FASE 1 · RELÂMPAGO</h3><p>Aparece uma dica e 4 alternativas. O tempo encolhe a cada acerto. Teclas <span class="kbd">1</span>–<span class="kbd">4</span>.</p>
-    <h3>☔ FASE 2 · CHUVA DE TERMOS</h3><p>O chefe fica furioso. Termos caem do teto: clique no que combina com a dica antes de ele bater no chão. Teclas <span class="kbd">1</span>–<span class="kbd">4</span> da esquerda para a direita.</p>
+    <h3>☔ FASE 2 · CHUVA DE TERMOS</h3><p>O chefe fica furioso. Leia a dica; depois os termos começam a cair. Clique no certo antes de ele bater no chão. Teclas <span class="kbd">1</span>–<span class="kbd">4</span> da esquerda para a direita.</p>
     <h3>⌨ FASE 3 · DIGITA AÍ</h3><p>Golpe final: escreva o termo, sem alternativas. Acentos e maiúsculas não importam, e um errinho de digitação passa. Errou? O chefe recupera vida.</p>
     <h3>🔥 COMBO E CRÍTICO</h3><p>A cada 4 acertos seguidos você carrega um CRÍTICO: o próximo acerto causa dano dobrado. Um erro zera o combo e tira um coração. Cada mudança de fase devolve 1 coração.</p>
     <h3>🧠 O QUE FAZ VOCÊ APRENDER</h3><p>O que você erra volta mais vezes, nesta luta e nas próximas. No fim de cada luta, a <b>Lista de Vingança</b> mostra cada erro com a resposta certa: leia antes da revanche.</p>
@@ -383,15 +383,21 @@ function chuva(item) {
   const opts = shuffle([item.ok, ...distractors(item, 3)]);
   const A = $('#arena');
   A.innerHTML = `<div class="modetag"><span>☔ CHUVA DE TERMOS</span><span>clique antes de cair</span></div>
+    <div class="rainclue">${esc(item.q)}</div>
     <div class="rain" id="rain">${[1, 2, 3].map(i => `<div class="lane" style="left:${i * 25}%"></div>`).join('')}
       ${opts.map((o, i) => `<button class="drop" data-v="${esc(o)}" style="left:${12.5 + i * 25}%"><span class="k">${i + 1}</span>${esc(o)}</button>`).join('')}
+      <div class="ready" id="ready">leia a dica…</div>
       <div class="ground"></div></div>
-    <div class="rainclue">${esc(item.q)}</div><div id="rev"></div>`;
+    <div id="rev"></div>`;
   const rain = $('#rain'), drops = [...rain.querySelectorAll('.drop')];
   const H = rain.clientHeight;
-  const ys = drops.map(() => -10 - Math.random() * 60);
-  const speed = (42 + run.combo * 6 + (run.arena ? run.correct : (run.max - run.hp)) * 2) * (H / 340);
-  let done = false, last = performance.now(), raf;
+  const ys = drops.map(() => 8 + Math.random() * 30);
+  drops.forEach((d, i) => d.style.top = ys[i] + 'px');
+  // velocidade baixa e crescimento suave; pausa para ler a dica antes de começar a cair
+  const speed = Math.min(60, 24 + run.combo * 2 + (run.arena ? run.correct : (run.max - run.hp)) * 1.5) * (H / 340);
+  const readMs = 900 + item.q.length * 28;
+  let done = false, last = performance.now() + readMs, raf;
+  setTimeout(() => { const r = $('#ready'); if (r) r.remove(); }, readMs);
   const finish = (btn, fell) => {
     if (done) return; done = true; cancelAnimationFrame(raf); document.removeEventListener('keydown', key);
     const ok = btn && btn.dataset.v === item.ok;
@@ -401,6 +407,7 @@ function chuva(item) {
     resolve(item, ok);
   };
   const tick = (now) => {
+    if (now < last) { raf = requestAnimationFrame(tick); return; }
     const dt = Math.min(.05, (now - last) / 1000); last = now;
     drops.forEach((d, i) => { ys[i] += speed * dt; d.style.top = ys[i] + 'px'; });
     const ci = drops.findIndex(d => d.dataset.v === item.ok);
